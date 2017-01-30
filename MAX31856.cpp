@@ -1,16 +1,19 @@
 /**
  * @file MAX31856.cpp
  * This is the library to access the MAX31856
- * 
+ *
  * Copyright (c) 2016 Kina Smith
  * This software is released under the MIT license. See the attached LICENSE file for details.
  */
 
 #include "MAX31856.h"
 
-SPISettings MAX31856::spiSettings = SPISettings(1000000, MSBFIRST, SPI_MODE1);
+// SPISettings MAX31856::spiSettings = SPISettings(1000000, MSBFIRST, SPI_MODE1);
+SPISettings MAX31856::_settings = SPISettings(1000000, MSBFIRST, SPI_MODE1);
 
 MAX31856::MAX31856(uint8_t CSx, uint8_t TC_TYPE, uint8_t FILT_FREQ, uint8_t AVG_MODE, uint8_t CMODE, uint8_t ONE_SHOT) {
+  SPI.begin();
+  // _settings = SPISettings(1000000, MSBFIRST, SPI_MODE1);
   _cs = CSx;
   _tcType = TC_TYPE;
   _filtFreq = FILT_FREQ;
@@ -37,7 +40,7 @@ MAX31856::MAX31856(uint8_t CSx, uint8_t TC_TYPE, uint8_t FILT_FREQ, uint8_t AVG_
     [2] FAULT mode (0=sets, clears automatically, 1=manually cleared, sets automatically)
     [1] FAULTCLR   (0 - default, 1=see datasheet)
     [0] 50/60Hz (0=60hz (default), 1=50Hz filtering) + harmonics */
-  
+
   // set CR1 (REG_CR1)
   // regdat = (AVG_MODE | TC_TYPE);
   regdat = (_avgMode | _tcType);
@@ -46,9 +49,9 @@ MAX31856::MAX31856(uint8_t CSx, uint8_t TC_TYPE, uint8_t FILT_FREQ, uint8_t AVG_
     [7] reserved
     [6:4] AVGSEL (0=1samp(default),1=2samp,2=4samp,3=8samp,0b1xx=16samp])
     [3:0] TC type (0=B, 1=E, 2=J, 3=K(default), 4=N, 5=R, 6=S, 7=T, others, see datasheet)*/
-  
+
   // set MASK (REG_MASK) - PWF default masks all but OV/UV and OPEN from lighting LED
-  regdat = (CJ_HIGH_MASK | CJ_LOW_MASK | TC_HIGH_MASK | TC_LOW_MASK); 
+  regdat = (CJ_HIGH_MASK | CJ_LOW_MASK | TC_HIGH_MASK | TC_LOW_MASK);
   regWrite(REG_MASK, 0x3F, regdat);
 /*  MASK, 02h/82h: This register masks faults from causing the FAULT output from asserting,
            but fault bits will still be set in the FSR (0x0F)
@@ -61,15 +64,15 @@ MAX31856::MAX31856(uint8_t CSx, uint8_t TC_TYPE, uint8_t FILT_FREQ, uint8_t AVG_
     [1] OV/UV fault mask
     [0] Open fault mask
     PWF example: 0x03 (OV/UV + open) */
-  
+
   // LEAVE CJHFT/CJLFT AT DEFAULT VALUES FOR PWF EXAMPLE
-  // note: these values would potentially be used to indicate material or component  
+  // note: these values would potentially be used to indicate material or component
   //       limits have been exceeded for your specific measurement configuration
 /*  CJHFT, 03h/83h: cold-jcn high fault threshold, default 0x7F (bit 7 is sign)
   CJLFT, 04h/84h: cold-jcn low fault threshold, default 0x00) */
 
   // LEAVE LTXFTX AT DEFAULT VALUES FOR PWF EXAMPLE
-  // note: these values would potentially be used to indicate material limits 
+  // note: these values would potentially be used to indicate material limits
   //       have been exceeded for your specific thermocouple
 /*  LTHFTH, 05h/85h: Linearize temperature high fault thresh MSB (bit 7 is sign)
   LTHFTL, 06h/86h: Linearize temperature high fault thresh LSB
@@ -89,7 +92,7 @@ void MAX31856::prime() {
 void MAX31856::read() {
   uint16_t cj = 0;
   uint32_t ltc = 0;
-  SPI.beginTransaction(spiSettings);
+  SPI.beginTransaction(_settings);
   digitalWrite(_cs, LOW);
   SPI.transfer(REG_CJTH | 0x00);
   cj |= (uint16_t)SPI.transfer(0) << 8;
@@ -138,6 +141,7 @@ bool MAX31856::hasError() {
 
 uint8_t MAX31856::regRead(uint8_t RegAdd)
 {
+  SPI.beginTransaction(_settings);
   digitalWrite(_cs, LOW);           // set pin low to start talking to IC
   // next pack address byte
   // bits 7:4 are 0 for read, register is in bits 3:0... format 0Xh
@@ -145,7 +149,7 @@ uint8_t MAX31856::regRead(uint8_t RegAdd)
   // then read register data
   uint8_t RegData = SPI.transfer(0x00);     // read register data from IC
   digitalWrite(_cs, HIGH);          // set pin high to end SPI session
-  
+  SPI.endTransaction();
   return RegData;
 }
 
@@ -158,7 +162,7 @@ void MAX31856::regWrite(uint8_t RegAdd, uint8_t BitMask, uint8_t RegData)
   // note: 'BitMask' must be bits targeted for replacement
   // add'l note: this function does NOT shift values into the proper place... they need to be there already
   uint8_t NewRegData = ((OrigRegData & ~BitMask) | (RegData & BitMask));
-
+  SPI.beginTransaction(_settings);
   // now configure and write the updated register value
   digitalWrite(_cs, LOW);             // set pin low to start talking to IC
   // next pack address byte
@@ -166,4 +170,5 @@ void MAX31856::regWrite(uint8_t RegAdd, uint8_t BitMask, uint8_t RegData)
   SPI.transfer((RegAdd & 0x0F) | 0x80);     // simple write, nothing to read back
   SPI.transfer(RegData);              // write register data to IC
   digitalWrite(_cs, HIGH);            // set pin high to end SPI session
+  SPI.endTransaction();
 }

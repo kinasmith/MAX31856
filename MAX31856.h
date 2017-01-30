@@ -1,7 +1,7 @@
 /**
  * @file MAX31856.h
  * This is the library to access the MAX31856
- * 
+ *
  * Copyright (c) 2015 Kina Smith
  * This software is released under the MIT license. See the attached LICENSE file for details.
  */
@@ -141,7 +141,8 @@ class MAX31856 {
     bool hasError();
 
   private:
-    static SPISettings spiSettings;
+    // static SPISettings spiSettings;
+    static SPISettings _settings;
     uint8_t _cs;
     uint8_t _tcType, _filtFreq, _avgMode, _cMode, _oneShot;
     double internal;
