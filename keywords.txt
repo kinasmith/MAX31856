@@ -1,9 +1,8 @@
 # Datatypes (KEYWORD1)
-TcType KEYWORD1
-TcAveraging KEYWORD1
-Nanoshield_Termopar KEYWORD1
+MAX31856 KEYWORD1
 
 # Methods and Functions (KEYWORD2)
+prime KEYWORD2
 begin KEYWORD2
 read KEYWORD2
 getExternal KEYWORD2
