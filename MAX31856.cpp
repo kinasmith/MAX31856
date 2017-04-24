@@ -164,11 +164,7 @@ uint8_t MAX31856::regRead(uint8_t RegAdd)
   // then read register data
   uint8_t RegData = SPI.transfer(0x00);     // read register data from IC
   digitalWrite(_cs, HIGH);          // set pin high to end SPI session
-<<<<<<< HEAD:src/MAX31856.cpp
-
-=======
   SPI.endTransaction();
->>>>>>> c3d480a01ac9eec1e8e97cb890503aebf003aaca:MAX31856.cpp
   return RegData;
 }
 
