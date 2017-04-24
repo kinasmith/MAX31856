@@ -1,7 +1,7 @@
 /**
  * @file MAX31856.h
  * This is the library to access the MAX31856
- * 
+ *
  * Copyright (c) 2015 Kina Smith
  * This software is released under the MIT license. See the attached LICENSE file for details.
  */
@@ -81,8 +81,9 @@ class MAX31856 {
      * Initializes SPI and CS pin.
      */
     // void begin();
-     // void prime(uint8_t TC_TYPE, uint8_t FILT_FREQ, uint8_t AVG_MODE, uint8_t CMODE, uint8_t ONE_SHOT);
-     void prime();
+    //  void prime(uint8_t TC_TYPE, uint8_t FILT_FREQ, uint8_t AVG_MODE, uint8_t CMODE, uint8_t ONE_SHOT);
+    //  void prime(uint8_t CSx, uint8_t TC_TYPE, uint8_t FILT_FREQ, uint8_t AVG_MODE, uint8_t CMODE, uint8_t ONE_SHOT);
+     void prime(uint8_t CSx, uint8_t TC_TYPE, uint8_t FILT_FREQ, uint8_t AVG_MODE, uint8_t CMODE, uint8_t ONE_SHOT);
     /**
      * @brief Reads all temperatures.
      * @see getInternal()

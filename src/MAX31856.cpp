@@ -1,7 +1,7 @@
 /**
  * @file MAX31856.cpp
  * This is the library to access the MAX31856
- * 
+ *
  * Copyright (c) 2016 Kina Smith
  * This software is released under the MIT license. See the attached LICENSE file for details.
  */
@@ -37,7 +37,7 @@ MAX31856::MAX31856(uint8_t CSx, uint8_t TC_TYPE, uint8_t FILT_FREQ, uint8_t AVG_
     [2] FAULT mode (0=sets, clears automatically, 1=manually cleared, sets automatically)
     [1] FAULTCLR   (0 - default, 1=see datasheet)
     [0] 50/60Hz (0=60hz (default), 1=50Hz filtering) + harmonics */
-  
+
   // set CR1 (REG_CR1)
   // regdat = (AVG_MODE | TC_TYPE);
   regdat = (_avgMode | _tcType);
@@ -46,9 +46,9 @@ MAX31856::MAX31856(uint8_t CSx, uint8_t TC_TYPE, uint8_t FILT_FREQ, uint8_t AVG_
     [7] reserved
     [6:4] AVGSEL (0=1samp(default),1=2samp,2=4samp,3=8samp,0b1xx=16samp])
     [3:0] TC type (0=B, 1=E, 2=J, 3=K(default), 4=N, 5=R, 6=S, 7=T, others, see datasheet)*/
-  
+
   // set MASK (REG_MASK) - PWF default masks all but OV/UV and OPEN from lighting LED
-  regdat = (CJ_HIGH_MASK | CJ_LOW_MASK | TC_HIGH_MASK | TC_LOW_MASK); 
+  regdat = (CJ_HIGH_MASK | CJ_LOW_MASK | TC_HIGH_MASK | TC_LOW_MASK);
   regWrite(REG_MASK, 0x3F, regdat);
 /*  MASK, 02h/82h: This register masks faults from causing the FAULT output from asserting,
            but fault bits will still be set in the FSR (0x0F)
@@ -61,15 +61,15 @@ MAX31856::MAX31856(uint8_t CSx, uint8_t TC_TYPE, uint8_t FILT_FREQ, uint8_t AVG_
     [1] OV/UV fault mask
     [0] Open fault mask
     PWF example: 0x03 (OV/UV + open) */
-  
+
   // LEAVE CJHFT/CJLFT AT DEFAULT VALUES FOR PWF EXAMPLE
-  // note: these values would potentially be used to indicate material or component  
+  // note: these values would potentially be used to indicate material or component
   //       limits have been exceeded for your specific measurement configuration
 /*  CJHFT, 03h/83h: cold-jcn high fault threshold, default 0x7F (bit 7 is sign)
   CJLFT, 04h/84h: cold-jcn low fault threshold, default 0x00) */
 
   // LEAVE LTXFTX AT DEFAULT VALUES FOR PWF EXAMPLE
-  // note: these values would potentially be used to indicate material limits 
+  // note: these values would potentially be used to indicate material limits
   //       have been exceeded for your specific thermocouple
 /*  LTHFTH, 05h/85h: Linearize temperature high fault thresh MSB (bit 7 is sign)
   LTHFTL, 06h/86h: Linearize temperature high fault thresh LSB
@@ -77,13 +77,28 @@ MAX31856::MAX31856(uint8_t CSx, uint8_t TC_TYPE, uint8_t FILT_FREQ, uint8_t AVG_
   LTLFTL, 08h/88h: Linearize temperature low fault thresh LSB */
 }
 
-void MAX31856::prime() {
+void MAX31856::prime(uint8_t CSx, uint8_t TC_TYPE, uint8_t FILT_FREQ, uint8_t AVG_MODE, uint8_t CMODE, uint8_t ONE_SHOT) {
+  _cs = CSx;
+  _tcType = TC_TYPE;
+  _filtFreq = FILT_FREQ;
+  _avgMode = AVG_MODE;
+  _cMode = CMODE;
+  _oneShot = ONE_SHOT;
+
+  this->internal = 0;
+  this->external = 0;
+  this->fault = 0;
+  pinMode(_cs, OUTPUT);
+  digitalWrite(_cs, HIGH);
+
   uint8_t regdat = 0;   // set up paramater to compile register configs
   // set CR0 (REG_CR0)
   regdat = (_cMode | _oneShot | OCFAULT_10MS | CJ_ENABLED | FAULT_AUTO | FAULT_CLR_DEF | _filtFreq);
   regWrite(REG_CR0, 0xFF, regdat); // write data to register
   regdat = (_avgMode | _tcType);
   regWrite(REG_CR1, 0xFF, regdat);
+  regdat = (CJ_HIGH_MASK | CJ_LOW_MASK | TC_HIGH_MASK | TC_LOW_MASK);
+  regWrite(REG_MASK, 0x3F, regdat);
 }
 
 void MAX31856::read() {
@@ -145,7 +160,7 @@ uint8_t MAX31856::regRead(uint8_t RegAdd)
   // then read register data
   uint8_t RegData = SPI.transfer(0x00);     // read register data from IC
   digitalWrite(_cs, HIGH);          // set pin high to end SPI session
-  
+
   return RegData;
 }
 

@@ -11,7 +11,7 @@ void setup() {
 }
 
 void loop() {
-	tc.prime(); //write registers for single shot read
+	tc.prime(Tc_cs, T_TYPE, CUTOFF_60HZ, AVG_SEL_16SAMP, CMODE_OFF, ONESHOT_ON); //write registers for single shot read
 	tc.read();
 	// Print temperature in the serial port, checking for errors
 	if (tc.hasError()) {
@@ -24,7 +24,7 @@ void loop() {
 	}
 	Serial.println();
 	// Wait for next reading For One Shot Mode, it must be greater than 150ms.
-	delay(1000); 
+	delay(1000);
 }
 
 void printErrors() {
