@@ -8,9 +8,12 @@
 
 #include "MAX31856.h"
 
-SPISettings MAX31856::spiSettings = SPISettings(1000000, MSBFIRST, SPI_MODE1);
+// SPISettings MAX31856::spiSettings = SPISettings(1000000, MSBFIRST, SPI_MODE1);
+SPISettings MAX31856::_settings = SPISettings(1000000, MSBFIRST, SPI_MODE1);
 
 MAX31856::MAX31856(uint8_t CSx, uint8_t TC_TYPE, uint8_t FILT_FREQ, uint8_t AVG_MODE, uint8_t CMODE, uint8_t ONE_SHOT) {
+  SPI.begin();
+  // _settings = SPISettings(1000000, MSBFIRST, SPI_MODE1);
   _cs = CSx;
   _tcType = TC_TYPE;
   _filtFreq = FILT_FREQ;
@@ -104,7 +107,7 @@ void MAX31856::prime(uint8_t CSx, uint8_t TC_TYPE, uint8_t FILT_FREQ, uint8_t AV
 void MAX31856::read() {
   uint16_t cj = 0;
   uint32_t ltc = 0;
-  SPI.beginTransaction(spiSettings);
+  SPI.beginTransaction(_settings);
   digitalWrite(_cs, LOW);
   SPI.transfer(REG_CJTH | 0x00);
   cj |= (uint16_t)SPI.transfer(0) << 8;
@@ -153,6 +156,7 @@ bool MAX31856::hasError() {
 
 uint8_t MAX31856::regRead(uint8_t RegAdd)
 {
+  SPI.beginTransaction(_settings);
   digitalWrite(_cs, LOW);           // set pin low to start talking to IC
   // next pack address byte
   // bits 7:4 are 0 for read, register is in bits 3:0... format 0Xh
@@ -160,7 +164,11 @@ uint8_t MAX31856::regRead(uint8_t RegAdd)
   // then read register data
   uint8_t RegData = SPI.transfer(0x00);     // read register data from IC
   digitalWrite(_cs, HIGH);          // set pin high to end SPI session
+<<<<<<< HEAD:src/MAX31856.cpp
 
+=======
+  SPI.endTransaction();
+>>>>>>> c3d480a01ac9eec1e8e97cb890503aebf003aaca:MAX31856.cpp
   return RegData;
 }
 
@@ -173,7 +181,7 @@ void MAX31856::regWrite(uint8_t RegAdd, uint8_t BitMask, uint8_t RegData)
   // note: 'BitMask' must be bits targeted for replacement
   // add'l note: this function does NOT shift values into the proper place... they need to be there already
   uint8_t NewRegData = ((OrigRegData & ~BitMask) | (RegData & BitMask));
-
+  SPI.beginTransaction(_settings);
   // now configure and write the updated register value
   digitalWrite(_cs, LOW);             // set pin low to start talking to IC
   // next pack address byte
@@ -181,4 +189,5 @@ void MAX31856::regWrite(uint8_t RegAdd, uint8_t BitMask, uint8_t RegData)
   SPI.transfer((RegAdd & 0x0F) | 0x80);     // simple write, nothing to read back
   SPI.transfer(RegData);              // write register data to IC
   digitalWrite(_cs, HIGH);            // set pin high to end SPI session
+  SPI.endTransaction();
 }

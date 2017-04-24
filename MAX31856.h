@@ -142,7 +142,8 @@ class MAX31856 {
     bool hasError();
 
   private:
-    static SPISettings spiSettings;
+    // static SPISettings spiSettings;
+    static SPISettings _settings;
     uint8_t _cs;
     uint8_t _tcType, _filtFreq, _avgMode, _cMode, _oneShot;
     double internal;
