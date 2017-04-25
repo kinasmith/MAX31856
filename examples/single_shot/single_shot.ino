@@ -3,11 +3,12 @@
 
 int Tc_cs = 5;
 
-MAX31856 tc(Tc_cs, T_TYPE, CUTOFF_60HZ, AVG_SEL_16SAMP, CMODE_OFF, ONESHOT_ON); //one shot mode
-// MAX31856 tc(Tc_cs, T_TYPE, CUTOFF_60HZ, AVG_SEL_1SAMP, CMODE_AUTO, ONESHOT_OFF); //constant conversion mode
+MAX31856 tc;
 
 void setup() {
 	Serial.begin(9600);
+	tc.begin(Tc_cs, T_TYPE, CUTOFF_60HZ, AVG_SEL_16SAMP, CMODE_OFF, ONESHOT_ON); //single shot mode
+	// tc.begin(Tc_cs, T_TYPE, CUTOFF_60HZ, AVG_SEL_1SAMP, CMODE_AUTO, ONESHOT_OFF); //constant conversion mode
 }
 
 void loop() {

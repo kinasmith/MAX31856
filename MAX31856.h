@@ -73,85 +73,85 @@
 
 
 class MAX31856 {
-  public:
-    MAX31856(uint8_t CSx, uint8_t TC_TYPE, uint8_t FILT_FREQ, uint8_t AVG_MODE, uint8_t CMODE, uint8_t ONE_SHOT);
+public:
+  // MAX31856(uint8_t CSx, uint8_t TC_TYPE = T_TYPE, uint8_t FILT_FREQ = CUTOFF_60HZ, uint8_t AVG_MODE = AVG_SEL_16SAMP, uint8_t CMODE = CMODE_OFF, uint8_t ONE_SHOT = ONESHOT_ON);
+  MAX31856();
+  /**
+   * @brief Initializes the module.
+   * Initializes SPI and CS pin.
+   */
+  void begin(uint8_t CSx, uint8_t TC_TYPE, uint8_t FILT_FREQ, uint8_t AVG_MODE, uint8_t CMODE, uint8_t ONE_SHOT);
+  //  void prime(uint8_t TC_TYPE, uint8_t FILT_FREQ, uint8_t AVG_MODE, uint8_t CMODE, uint8_t ONE_SHOT);
+  //  void prime(uint8_t CSx, uint8_t TC_TYPE, uint8_t FILT_FREQ, uint8_t AVG_MODE, uint8_t CMODE, uint8_t ONE_SHOT);
+   void prime(uint8_t CSx, uint8_t TC_TYPE, uint8_t FILT_FREQ, uint8_t AVG_MODE, uint8_t CMODE, uint8_t ONE_SHOT);
+  /**
+   * @brief Reads all temperatures.
+   * @see getInternal()
+   * @see getExternal()
+   * @see hasError()
+   */
+  void read();
 
-    /**
-     * @brief Initializes the module.
-     * Initializes SPI and CS pin.
-     */
-    // void begin();
-    //  void prime(uint8_t TC_TYPE, uint8_t FILT_FREQ, uint8_t AVG_MODE, uint8_t CMODE, uint8_t ONE_SHOT);
-    //  void prime(uint8_t CSx, uint8_t TC_TYPE, uint8_t FILT_FREQ, uint8_t AVG_MODE, uint8_t CMODE, uint8_t ONE_SHOT);
-     void prime(uint8_t CSx, uint8_t TC_TYPE, uint8_t FILT_FREQ, uint8_t AVG_MODE, uint8_t CMODE, uint8_t ONE_SHOT);
-    /**
-     * @brief Reads all temperatures.
-     * @see getInternal()
-     * @see getExternal()
-     * @see hasError()
-     */
-    void read();
+  /**
+   * @brief Gets the last external temperature reading (hot junction).
+   * @return The last external temperature reading.
+   * @see read()
+   */
+  double getExternal();
 
-    /**
-     * @brief Gets the last external temperature reading (hot junction).
-     * @return The last external temperature reading.
-     * @see read()
-     */
-    double getExternal();
+  /**
+   * @brief Gets the last internal temperature reading (cold junction).
+   * @return The last internal temperature reading.
+   * @see read()
+   */
+  double getInternal();
 
-    /**
-     * @brief Gets the last internal temperature reading (cold junction).
-     * @return The last internal temperature reading.
-     * @see read()
-     */
-    double getInternal();
+  /**
+   * @brief Checks if external temperature is out of range.
+   * @return True if external temperature (hot junction) is out of range.
+   */
+  bool isExternalOutOfRange();
 
-    /**
-     * @brief Checks if external temperature is out of range.
-     * @return True if external temperature (hot junction) is out of range.
-     */
-    bool isExternalOutOfRange();
+  /**
+   * @brief Checks if internal temperature is out of range.
+   * @return True if internal temperature (cold junction) is out of range.
+   */
+  bool isInternalOutOfRange();
 
-    /**
-     * @brief Checks if internal temperature is out of range.
-     * @return True if internal temperature (cold junction) is out of range.
-     */
-    bool isInternalOutOfRange();
+  /**
+   * @brief Checks for overvoltage or undervoltage.
+   * @return True if there is overvoltage or undervoltage on the thermocouple inputs.
+   */
+  bool isOverUnderVoltage();
 
-    /**
-     * @brief Checks for overvoltage or undervoltage.
-     * @return True if there is overvoltage or undervoltage on the thermocouple inputs.
-     */
-    bool isOverUnderVoltage();
+  /**
+   * @brief Checks if thermocouple circuit is open.
+   * @return True if thermocouple circuit is open.
+   */
+  bool isOpen();
 
-    /**
-     * @brief Checks if thermocouple circuit is open.
-     * @return True if thermocouple circuit is open.
-     */
-    bool isOpen();
+  /**
+   * @brief Checks if there are errors.
+   * @return True if any of the following errors is detected: open circuit, overvoltage, undervoltage,
+   *         internal temperature out of range or external temperatur out of range.
+   * @see isExternalOutOfRange()
+   * @see isInternalOutOfRange()
+   * @see isOverUnderVoltage()
+   * @see isOpen()
+   */
+  bool hasError();
 
-    /**
-     * @brief Checks if there are errors.
-     * @return True if any of the following errors is detected: open circuit, overvoltage, undervoltage,
-     *         internal temperature out of range or external temperatur out of range.
-     * @see isExternalOutOfRange()
-     * @see isInternalOutOfRange()
-     * @see isOverUnderVoltage()
-     * @see isOpen()
-     */
-    bool hasError();
+private:
+  // static SPISettings spiSettings;
+  static SPISettings _settings;
+  uint8_t _cs;
+  uint8_t _tcType, _filtFreq, _avgMode, _cMode, _oneShot;
+  double internal;
+  double external;
+  uint8_t fault;
 
-  private:
-    // static SPISettings spiSettings;
-    static SPISettings _settings;
-    uint8_t _cs;
-    uint8_t _tcType, _filtFreq, _avgMode, _cMode, _oneShot;
-    double internal;
-    double external;
-    uint8_t fault;
-
-    uint8_t regRead(uint8_t RegAdd);
-    void regWrite(uint8_t RegAdd, uint8_t BitMask, uint8_t RegData);
+  uint8_t regRead(uint8_t RegAdd);
+  void regWrite(uint8_t RegAdd, uint8_t BitMask, uint8_t RegData);
 };
 
 #endif
